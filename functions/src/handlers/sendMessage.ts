@@ -1,10 +1,11 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { messageService } from "../services/messageService";
-import { validateMessageDto, ValidationError } from "../utils/validation";
+import { openaiService } from "../services/openaiService";
+import { validateQuestionDto, ValidationError } from "../utils/validation";
 import { extractClientInfo } from "../utils/session";
-import { MessageResponse } from "../types/message";
 import { UserInfo } from "../types/user";
+import { MessageResponse, ErrorResponse, OpenAIMessage } from "../types/message";
 
 export const sendMessage = onRequest(async (request, response) => {
   try {
@@ -12,7 +13,7 @@ export const sendMessage = onRequest(async (request, response) => {
     const { ipAddress, userAgent } = extractClientInfo(request);
 
     // Validate input using DTO
-    const validatedDto = await validateMessageDto(request.body);
+    const validatedDto = await validateQuestionDto(request.body);
 
     // Create user info
     const userInfo: UserInfo = {
@@ -20,16 +21,35 @@ export const sendMessage = onRequest(async (request, response) => {
       userAgent,
     };
 
-    // Save to Firestore with user identification
-    const docRef = await messageService.saveMessage(
-      validatedDto.message,
-      userInfo
+    // Save user question first
+    await messageService.saveMessage(validatedDto.question, "user", userInfo);
+
+    // Get message history for context
+    const messageHistory = await messageService.getMessageHistory(
+      ipAddress,
+      userAgent
     );
 
+    // Convert history to OpenAI format
+    const history: OpenAIMessage[] = messageHistory.map((msg) => ({
+      role: msg.role,
+      content: msg.message,
+    }));
+
+    // Generate AI response
+    const aiResponse = await openaiService.generateResponse(
+      validatedDto.question,
+      history
+    );
+
+    // Save AI response
+    const docRef = await messageService.saveMessage(aiResponse, "assistant", userInfo);
+
     // Log success with user info
-    logger.info("Message saved successfully", {
+    logger.info("Question answered successfully", {
       messageId: docRef.id,
-      message: validatedDto.message,
+      question: validatedDto.question,
+      answerLength: aiResponse.length,
       ipAddress,
       userAgent,
     });
@@ -37,18 +57,26 @@ export const sendMessage = onRequest(async (request, response) => {
     // Send response
     const responseData: MessageResponse = {
       success: true,
+      answer: aiResponse,
       messageId: docRef.id,
-      message: "Message saved successfully",
     };
 
     response.status(200).send(responseData);
   } catch (error) {
     if (error instanceof ValidationError) {
       logger.warn("Validation error", { error: error.message });
-      response.status(400).send({ error: error.message });
+      const errorResponse: ErrorResponse = {
+        success: false,
+        error: error.message,
+      };
+      response.status(400).send(errorResponse);
     } else {
-      logger.error("Error saving message", error);
-      response.status(500).send({ error: "Failed to save message" });
+      logger.error("Error processing question", error);
+      const errorResponse: ErrorResponse = {
+        success: false,
+        error: "Failed to process question",
+      };
+      response.status(500).send(errorResponse);
     }
   }
 });

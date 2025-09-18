@@ -1,9 +1,33 @@
-### Valid message request
-POST http://localhost:5001/about-me-472421/us-central1/saveMessage
+### Ask about Arthur's experience
+POST http://localhost:5001/about-me-472421/us-central1/sendMessage
 Content-Type: application/json
 
 {
-  "message": "Hello, world!"
+  "question": "What is Arthur's current role and what does he do?"
+}
+
+### Ask about Arthur's skills
+POST http://localhost:5001/about-me-472421/us-central1/sendMessage
+Content-Type: application/json
+
+{
+  "question": "What technologies does Arthur work with?"
+}
+
+### Ask about Arthur's background
+POST http://localhost:5001/about-me-472421/us-central1/sendMessage
+Content-Type: application/json
+
+{
+  "question": "Tell me about Arthur's educational background and career journey"
+}
+
+### Ask about Arthur's achievements
+POST http://localhost:5001/about-me-472421/us-central1/sendMessage
+Content-Type: application/json
+
+{
+  "question": "What are some of Arthur's key achievements in his career?"
 }
 
 ### Empty message (should fail)
