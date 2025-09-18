@@ -3,7 +3,7 @@ POST http://localhost:5001/about-me-472421/us-central1/saveMessage
 Content-Type: application/json
 
 {
-  "message": "Hello, world!",
+  "message": "Hello, world!"
 }
 
 ### Empty message (should fail)
