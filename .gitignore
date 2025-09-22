@@ -13,6 +13,8 @@ firebase-debug.*.log*
 functions/lib
 functions/node_modules
 
+.vscode/
+
 # Firebase config
 
 # Uncomment this if you'd like others to create their own Firebase project.
