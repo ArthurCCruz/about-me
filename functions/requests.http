@@ -1,10 +1,27 @@
-### Ask about Arthur's experience
+### Ask about Arthur's experience (Streaming Response)
 POST http://localhost:5001/about-me-472421/us-central1/sendMessage
 Content-Type: application/json
+Accept: text/event-stream
 
 {
   "question": "What is Arthur's current role and what does he do?"
 }
+
+# SSE Response Format:
+# event: message-id
+# data: {"messageId": "doc-id"}
+# 
+# event: chunk
+# data: {"success": true, "messageId": "doc-id", "chunk": "partial text", "isComplete": false}
+# 
+# event: heartbeat
+# data: {"timestamp": 1234567890, "chunkCount": 10, "messageId": "doc-id"}
+# 
+# event: complete
+# data: {"success": true, "messageId": "doc-id", "chunk": "", "isComplete": true}
+# 
+# event: close
+# data: {"reason": "stream_complete"}
 
 ### Ask about Arthur's skills
 POST http://localhost:5001/about-me-472421/us-central1/sendMessage

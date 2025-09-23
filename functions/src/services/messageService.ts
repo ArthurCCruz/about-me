@@ -53,6 +53,18 @@ export class MessageService {
       ...doc.data(),
     })) as MessageDocument[];
   }
+
+  /**
+   * Updates an existing message with new content.
+   * @param messageId - The ID of the message to update
+   * @param newContent - The new message content
+   * @return Promise that resolves when update is complete
+   */
+  async updateMessage(messageId: string, newContent: string): Promise<void> {
+    await db.collection("messages").doc(messageId).update({
+      message: newContent.trim(),
+    });
+  }
 }
 
 export const messageService = new MessageService();

@@ -17,13 +17,12 @@ export class OpenAIService {
   }
 
   /**
-   * Generates AI response about Arthur Cruz based on question and context.
+   * Generates streaming AI response about Arthur Cruz based on question and context.
    * @param question - The user's question
-   * @param userInfo - User identification info for context
    * @param conversationHistory - Previous conversation messages
-   * @return AI response
+   * @return Streaming response
    */
-  async generateResponse(
+  async generateStreamingResponse(
     question: string,
     conversationHistory: OpenAIMessage[] = []
   ) {
@@ -37,14 +36,15 @@ export class OpenAIService {
       { role: "user" as const, content: question },
     ];
 
-    const completion = await this.openai.chat.completions.create({
+    const stream = await this.openai.chat.completions.create({
       model: this.config.openai.model,
       messages,
       max_tokens: this.config.openai.maxTokens,
       temperature: this.config.openai.temperature,
+      stream: true,
     });
 
-    return completion.choices[0]?.message?.content || "I apologize, but I couldn't generate a response.";
+    return stream;
   }
 
   private buildSystemPrompt(): string {

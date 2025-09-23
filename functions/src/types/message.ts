@@ -52,6 +52,16 @@ export interface MessageResponse {
 }
 
 /**
+ * API response for streaming message operations
+ */
+export interface StreamingMessageResponse {
+  success: true;
+  messageId: string;
+  chunk: string;
+  isComplete: boolean;
+}
+
+/**
  * API response for failed operations
  */
 export interface ErrorResponse {
@@ -62,4 +72,4 @@ export interface ErrorResponse {
 /**
  * Union type for all possible API responses
  */
-export type ApiResponse = MessageResponse | ErrorResponse;
+export type ApiResponse = MessageResponse | StreamingMessageResponse | ErrorResponse;
